@@ -36,7 +36,7 @@ WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 
 # Application code (.env is excluded via .dockerignore; secrets come from env_file at runtime)
-COPY config.py .
+COPY config.py logger.py ./
 COPY app ./app
 
 # Run as an unprivileged user

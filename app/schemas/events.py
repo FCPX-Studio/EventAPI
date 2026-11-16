@@ -1,7 +1,7 @@
 from pydantic import BaseModel, AwareDatetime
 
 
-class PaddleEventHook(BaseModel):
+class RawPaddleEvent(BaseModel):
     event_id: str
     event_type: str
     occurred_at: AwareDatetime
