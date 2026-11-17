@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 from app.main import app, api_prefix
+from config import parse_origins
 from app.website import ClaimLimits, ClaimWaiters, claim_matches
 from events import IssuedItem, IssuedKey, IssuedLicenseTerms, IssuedProduct, LicenseIssued
 from events.streams import LICENSES_ISSUED, encode
@@ -258,8 +259,25 @@ def test_cors_allows_the_website_only(client):
             "Origin": origin, "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type",
         })
 
-    assert preflight("https://website.test").headers.get("access-control-allow-origin") == "https://website.test"
+    for origin in ("https://website.test", "https://www.website.test"):  # both entries of WEBSITE_ORIGIN
+        assert preflight(origin).headers.get("access-control-allow-origin") == origin
     assert "access-control-allow-origin" not in preflight("https://evil.test").headers
+
+
+@pytest.mark.parametrize("value, expected", [
+    ("https://fcpxstudio.shop", ["https://fcpxstudio.shop"]),
+    ("https://www.fcpxstudio.shop, https://fcpxstudio.shop/", ["https://www.fcpxstudio.shop", "https://fcpxstudio.shop"]),
+    ("HTTPS://FcpxStudio.shop/,https://fcpxstudio.shop", ["https://fcpxstudio.shop"]),  # normalized, deduplicated
+    ("http://localhost:3000,", ["http://localhost:3000"]),
+])
+def test_website_origins_parsed(value, expected):
+    assert parse_origins(value) == expected
+
+
+@pytest.mark.parametrize("value", ["", " , ", "fcpxstudio.shop", "https://fcpxstudio.shop/en", "ftp://fcpxstudio.shop", "*"])
+def test_invalid_website_origins_are_refused(value):
+    with pytest.raises(ValueError):
+        parse_origins(value)
 
 
 # --------------------------------------------------------------------------- the reader race

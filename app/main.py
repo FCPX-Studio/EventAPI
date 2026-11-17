@@ -55,7 +55,7 @@ app = FastAPI(
 # ignore it, the claim limits (app/website/limits.py) are what protects the route
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.WEBSITE_ORIGIN],
+    allow_origins=settings.website_origins,
     allow_methods=["POST"],
     allow_headers=["Content-Type"],
 )
