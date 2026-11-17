@@ -35,6 +35,16 @@ class EventAPISettings(BaseSettings):
     PADDLE_ENVIRONMENT: Literal["sandbox", "production"] = "sandbox"
     PADDLE_WEBHOOK_SECRET: SecretStr
 
+    # Website (license claims from the confirmation page, app/routers/web.py)
+    # Origin allowed to call the web routes from a browser (CORS), e.g. "https://fcpxstudio.shop". Required
+    WEBSITE_ORIGIN: str
+    # How long a claim waits for the order's licenses before answering `pending`
+    CLAIM_WAIT_SECONDS: float = 20
+    # Abuse limits (app/website/limits.py)
+    CLAIM_MAX_WAITS_PER_IP: int = 3
+    CLAIM_MAX_REQUESTS_PER_MINUTE: int = 10
+    CLAIM_MAX_WAITS: int = 500
+
 
 
 settings = EventAPISettings() # type: ignore

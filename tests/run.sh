@@ -38,7 +38,7 @@ docker network create "$NET" >/dev/null
 docker run -d --name "$REDIS" --network "$NET" redis:7.4 redis-server --requirepass "$REDIS_PASSWORD" >/dev/null
 docker run -d --name "$APP" --network "$NET" -p 127.0.0.1:18000:8000 \
   -e REDIS_HOST="$REDIS" -e REDIS_PORT=6379 -e REDIS_PASSWORD="$REDIS_PASSWORD" \
-  -e PADDLE_WEBHOOK_SECRET="$SECRET" \
+  -e PADDLE_WEBHOOK_SECRET="$SECRET" -e WEBSITE_ORIGIN=https://website.test \
   event-api:local >/dev/null
 
 for _ in $(seq 1 30); do
@@ -49,6 +49,6 @@ done
 echo "==> Running tests"
 docker run --rm --network "$NET" \
   -e REDIS_HOST="$REDIS" -e REDIS_PORT=6379 -e REDIS_PASSWORD="$REDIS_PASSWORD" \
-  -e PADDLE_WEBHOOK_SECRET="$SECRET" \
+  -e PADDLE_WEBHOOK_SECRET="$SECRET" -e WEBSITE_ORIGIN=https://website.test \
   -e E2E_BASE_URL="http://$APP:8000" \
   event-api:test python -m pytest tests -v -p no:cacheprovider -rxXs "$@"

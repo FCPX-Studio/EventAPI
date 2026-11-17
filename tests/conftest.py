@@ -16,6 +16,10 @@ os.environ.setdefault("REDIS_HOST", "localhost")
 os.environ.setdefault("REDIS_PORT", "6379")
 os.environ.setdefault("REDIS_PASSWORD", "")
 os.environ.setdefault("PADDLE_WEBHOOK_SECRET", "pdl_ntfset_test_secret")
+os.environ.setdefault("WEBSITE_ORIGIN", "https://website.test")
+# Short waits and loose rate limits for the suite: tests/test_web_claims.py sets tight ones where it tests them
+os.environ.setdefault("CLAIM_WAIT_SECONDS", "1")
+os.environ.setdefault("CLAIM_MAX_REQUESTS_PER_MINUTE", "100000")
 
 import pytest
 import redis
