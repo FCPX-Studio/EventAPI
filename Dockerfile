@@ -31,12 +31,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH"
 
+# Interface and topic segment of the shared logger (logger package)
+ENV LOG_SERVICE=eventapi
+
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 
 # Application code (.env is excluded via .dockerignore; secrets come from env_file at runtime)
-COPY config.py logger.py ./
+COPY config.py ./
 COPY app ./app
 
 # Run as an unprivileged user

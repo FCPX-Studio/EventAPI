@@ -24,3 +24,6 @@ uvicorn==0.54.0
 
 # Shared Redis events (schemas and client), pinned by tag
 events @ git+https://github.com/FCPX-Studio/events.git@v0.4.0
+
+# Shared logger (console + MQTT), pinned by tag
+logger @ git+https://github.com/FCPX-Studio/logger.git@v0.2.2
