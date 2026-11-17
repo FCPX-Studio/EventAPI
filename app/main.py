@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     # --- startup logic ---
     app.state.publisher = EventPublisher()
     app.state.paddle = Paddle()
-    # One shared reader of licenses:issued for every waiting claim (app/website/claims.py)
+    # One shared reader of orders:licensed for every waiting claim (app/website/claims.py)
     app.state.claims = ClaimWaiters()
     await app.state.claims.start()
     app.state.claim_limits = ClaimLimits(

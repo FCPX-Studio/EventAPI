@@ -1,8 +1,8 @@
 """
-POST /events/v1/web/orders/{txn}/licenses: license claims from the website's confirmation page.
+POST /events/v1/web/orders/{txn}: license claims from the website's confirmation page.
 
 Runs against a real Redis (like the rest of the suite), with CLAIM_WAIT_SECONDS=1 (tests/conftest.py).
-Events are written to `licenses:issued` the way AuthAPI publishes them.
+Events are written to `orders:licensed` the way AuthAPI publishes them.
 """
 import asyncio
 import hashlib
@@ -17,8 +17,8 @@ import pytest
 from app.main import app, api_prefix
 from config import parse_origins
 from app.website import ClaimLimits, ClaimWaiters, claim_matches
-from events import IssuedItem, IssuedKey, IssuedLicenseTerms, IssuedProduct, LicenseIssued
-from events.streams import LICENSES_ISSUED, encode
+from events import IssuedItem, IssuedKey, IssuedLicenseTerms, IssuedProduct, OrderLicensed
+from events.streams import ORDERS_LICENSED, encode
 
 # Shared test vector (also used by the website's tests): the browser hashes the secret's raw bytes
 VECTOR_SECRET = "00" * 32
@@ -34,10 +34,10 @@ def txn_id() -> str:
 
 
 def claim_path(txn: str) -> str:
-    return f"{api_prefix}/web/orders/{txn}/licenses"
+    return f"{api_prefix}/web/orders/{txn}"
 
 
-def issued(txn: str, claim_hash: str | None = CLAIM_HASH, keys: list[str] = KEYS) -> LicenseIssued:
+def issued(txn: str, claim_hash: str | None = CLAIM_HASH, keys: list[str] = KEYS) -> OrderLicensed:
     product = IssuedProduct(bundle_id="com.fcpxstudio.trim", name="Trim Assist", type="plugin", version="1.2.0")
     terms = IssuedLicenseTerms(
         paddle_price_id="pri_01gsz8x8sawmvhz1pv30nge1ke", name="2 seats", description=None,
@@ -47,17 +47,17 @@ def issued(txn: str, claim_hash: str | None = CLAIM_HASH, keys: list[str] = KEYS
         paddle_item_id="txnitm_01hv8y1z2x3w4v5u6t7s8r9q0p", quantity=len(keys), product=product, license=terms,
         keys=[IssuedKey(license_key=k, item_index=i, expires_at=None) for i, k in enumerate(keys, 1)],
     )
-    return LicenseIssued(order_id=1, paddle_order_id=txn, user_license_ids=list(range(1, len(keys) + 1)),
+    return OrderLicensed(order_id=1, paddle_order_id=txn, user_license_ids=list(range(1, len(keys) + 1)),
                          items=[item], claim_hash=claim_hash)
 
 
-def publish(redis_client, event: LicenseIssued) -> None:
-    redis_client.xadd(LICENSES_ISSUED, encode(LICENSES_ISSUED, event))
+def publish(redis_client, event: OrderLicensed) -> None:
+    redis_client.xadd(ORDERS_LICENSED, encode(ORDERS_LICENSED, event))
 
 
 @pytest.fixture(autouse=True)
 def clean_claims(redis_client):
-    redis_client.delete(LICENSES_ISSUED)
+    redis_client.delete(ORDERS_LICENSED)
     for key in redis_client.scan_iter("claims:rate:*"):
         redis_client.delete(key)
     yield

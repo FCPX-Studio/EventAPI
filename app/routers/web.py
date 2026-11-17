@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 @router.post(
-    '/orders/{paddle_order_id}/licenses',
+    '/orders/{paddle_order_id}',
     response_model=ClaimResponse,
     responses={
         422: {"description": "Malformed order ID or claim secret"},
@@ -29,11 +29,11 @@ router = APIRouter(
         503: {"description": "Too many waiting requests, or Redis unavailable (Retry-After)"},
     },
 )
-async def claim_licenses(paddle_order_id: PaddleOrderId, body: ClaimRequest, request: Request, response: Response):
+async def claim_order(paddle_order_id: PaddleOrderId, body: ClaimRequest, request: Request, response: Response):
     """
     The license keys of an order, for the browser that holds its claim secret (long-poll).
 
-    Waits up to CLAIM_WAIT_SECONDS for the order's LicenseIssued (answered at once if it's already in the
+    Waits up to CLAIM_WAIT_SECONDS for the order's OrderLicensed (answered at once if it's already in the
     stream), then answers once:
     - `licenses` + items: sha256(secret) is the order's claim_hash
     - `forbidden`: the secret doesn't match, or the order has no claim hash
